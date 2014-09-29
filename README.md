@@ -16,7 +16,7 @@ When a new tag is created for this repository, a corresponding public
 image is created in Cloud Storage.  So, instead of checking out this
 repository and creating your own image, you can add one of the images
 from the [public space]
-(https://console.developers.google.com/project/genomics-public-data/storage/genomics-public-data/gce-images/)
+(https://console.developers.google.com/storage/genomics-public-data/gce-images/)
 
 ```
   gcutil addimage omics-<id> gs://genomics-public-data/gce-images/omics-<id>.tar.gz
