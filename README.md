@@ -19,7 +19,7 @@ from the [public space]
 (https://console.developers.google.com/storage/genomics-public-data/gce-images/)
 
 ```
-  gcloud compute images create omics-<id> --source-uri gs://genomics-public-data/gce-images/omics-<id>.tar.gz
+  gcloud compute images create omics-<id> --project <project-name> --source-uri gs://genomics-public-data/gce-images/omics-<id>.image.tar.gz
 ```
 
 ## Execution
