@@ -41,7 +41,7 @@ function setup_env {
   mkdir -p ${BUILD_DIR}
 
   # Useful for parallelizing builds.
-  export NUM_PROCESSORS=`grep -c ^processor /proc/cpuinfo`
+  export NUM_PROCESSORS=$(grep -c ^processor /proc/cpuinfo)
 }
 
 # Do basic upgrades first.
@@ -55,27 +55,60 @@ function init_apt {
 # dependencies.
 function install_packages {
   apt-get install -y \
-    libc6-dev-i386 \
     apache2 \
-    cmake g++ autoconf patch libtool build-essential \
-    gcc python-dev python-setuptools \
-    git mercurial subversion \
-    unzip libxml2-dev \
-    emacs vim tmux \
-    python3 \
-    mysql-client \
-    gsl-bin python-scipy \
+    autoconf \
+    build-essential \
+    cmake \
+    cpanminus \
+    emacs \
+    expat \
+    g++ \
+    gcc \
+    git \
+    gnuplot \
+    gsl-bin \
+    libatlas3-base \
+    libatlas3gf-base \
+    libatlas-base-dev \
+    libatlas-dev \
     libboost-all-dev \
-    libbz2-dev zlib1g-dev \
-    libncurses5-dev libcurl4-gnutls-dev \
-    qt4-dev-tools libglpk-dev \
-    libgsl0-dev libxerces-c-dev libgsl0-dev \
-    libsvm-dev libglpk-dev libzip-dev \
-    x11-apps xauth xterm \
-    cpanminus libmodule-find-perl libgetopt-declare-perl \
-    libossp-uuid-perl libdigest-sha-perl libdata-hexdumper-perl \
-    python-hachoir-parser libtie-ixhash-perl \
-    tabix
+    libbz2-dev \
+    libc6-dev-i386 \
+    libcurl4-openssl-dev \
+    libdata-hexdumper-perl \
+    libdigest-sha-perl \
+    libfuse-dev \
+    libgd2-xpm-dev \
+    libgetopt-declare-perl \
+    libglpk-dev \
+    libgsl0-dev \
+    libmodule-find-perl \
+    libncurses5-dev \
+    libossp-uuid-perl \
+    libperl-dev \
+    libpng12-dev \
+    libsvm-dev \
+    libtie-ixhash-perl \
+    libtool \
+    libxerces-c-dev \
+    libxml2-dev \
+    libxml-parser-perl \
+    libzip-dev \
+    mercurial \
+    mysql-client \
+    python-dev \
+    python-hachoir-parser \
+    python-scipy \
+    python-setuptools \
+    qt4-dev-tools \
+    subversion \
+    swig \
+    tabix \
+    unzip \
+    x11-apps \
+    xsltproc \
+    xterm \
+    zlib1g-dev
   apt-get clean -y
   easy_install pip
 }
@@ -118,7 +151,7 @@ function setup_x {
 # To allow x11 forwarding to work properly.
 X11UseLocalhost no
 EOF
-  /etc/init.d/ssh restart
+  restart ssh
 }
 
 # In order for gsutil to be performant on large downloads, need
@@ -158,7 +191,8 @@ function install_bcl2fastq {
   rm -r bcl2fastq
 }
 
-# Use the bcl2fastq 2.x.y.z conversion software to convert NextSeq 500 or HiSeq X output.
+# Use the bcl2fastq 2.x.y.z conversion software to convert NextSeq 500
+# or HiSeq X output.
 function install_bcl2fastq2 {
   local version=${1}
   cd ${BUILD_DIR}
@@ -205,14 +239,15 @@ function install_bowtie2 {
   rm -r bowtie2
 }
 
-# SamTools is needed by TopHat2.
+# SamTools is needed by Cufflinks.
+# TopHat2 uses it's own packaging of SamTools.
 function install_samtools {
   local version=${1}
   cd ${BUILD_DIR}
 
   git clone https://github.com/samtools/samtools.git
   cd samtools
-  git checkout ${version}  # TODO: Use 'tags' dir when its available.
+  git checkout ${version}
   make -j${NUM_PROCESSORS}
   # There is no 'install' target, so install everything by hand.
   mkdir -p /usr/local/include/bam
@@ -230,14 +265,15 @@ function install_tophat2 {
 
   curl -L http://ccb.jhu.edu/software/tophat/downloads/tophat-${version}.tar.gz | tar zx
   cd tophat-${version}
-  ./configure
-  make install  # do not use -j option, as the Makefile seems unparallelizable
+  # TODO: Patch configuration to find the boost libraries automagically.
+  ./configure --with-boost-libdir=/usr/lib/x86_64-linux-gnu
+  make install  # Do not use -j option, as the Makefile seems unparallelizable.
 
   cd ${BUILD_DIR}
   rm -r tophat-${version}
 }
 
-# Eigen is needed by cufflinks and OpenMS
+# Eigen is needed by cufflinks.
 function install_eigen {
   local version=${1}
   cd ${BUILD_DIR}
@@ -252,9 +288,15 @@ function install_cufflinks {
   local version=${1}
   cd ${BUILD_DIR}
 
-  curl -L http://cufflinks.cbcb.umd.edu/downloads/cufflinks-${version}.tar.gz | tar zx
+  curl -L http://cole-trapnell-lab.github.io/cufflinks/assets/downloads/\
+cufflinks-${version}.tar.gz | tar zx
   cd cufflinks-${version}
-  ./configure
+  # TODO: Patch configuration to find the boost libraries automagically.
+  ./configure \
+    --with-boost-system=/usr/lib/x86_64-linux-gnu/libboost_system.a \
+    --with-boost-thread=/usr/lib/x86_64-linux-gnu/libboost_thread.a \
+    --with-boost-serialization=/usr/lib/x86_64-linux-gnu/\
+libboost_serialization.a
   make -j${NUM_PROCESSORS} install
 
   cd ${BUILD_DIR}
@@ -305,64 +347,8 @@ function install_freebayes {
   git checkout tags/${version}
   make -j${NUM_PROCESSORS}
   make install
-
   cd ${BUILD_DIR}
   rm -r freebayes
-}
-
-function install_sra {
-  local version=${1}
-  cd ${BUILD_DIR}
-
-  # TODO: install from https://github.com/ncbi/sratoolkit
-  curl -L http://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/${version}/sratoolkit.${version}-ubuntu64.tar.gz | tar zx
-  cat > /etc/bash.bashrc.d/sra.sh <<EOF
-export PATH=${BUILD_DIR}/sratoolkit.${version}-ubuntu64/bin\${PATH:+:\$PATH}
-EOF
-}
-
-function install_unfinnigan {
-  local version=${1}
-  cd ${BUILD_DIR}
-
-  cpanm -i Digest::SHA1 XML::Generator
-
-  hg clone -r ${version} https://code.google.com/p/unfinnigan/
-  cd unfinnigan/perl/Finnigan
-  perl Makefile.PL
-  make install
-
-  cd ${BUILD_DIR}
-  rm -r unfinnigan
-}
-
-function install_openms {
-  local version=${1}
-  cd ${BUILD_DIR}
-
-  # TODO: install from github repos:
-  # git clone https://github.com/OpenMS/OpenMS
-  # git clone https://github.com/OpenMS/contrib
-  # git checkout tags/${version}
-
-  local base=OpenMS-${version}
-  curl -L http://sourceforge.net/projects/open-ms/files/OpenMS/${base}/${base}.tar.gz/download | tar zx
-  cd ${base}
-
-  # Fix for locating multi-arch libraries
-  sed -i s/" NO_DEFAULT_PATH"// cmake/OpenMSBuildSystem_macros.cmake
-  cd contrib
-  cmake . -DBUILD_TYPE=SEQAN  # Only build Seqan, and none of the other contrib libraries.
-  cd ..
-  cmake . -DBOOST_USE_STATIC=off  # It does shared libraries (boo!!!), which run into PIC problems with static libraries.
-  make -j${NUM_PROCESSORS}
-
-  local openms_dir=${BUILD_DIR}/${base}
-  cat > /etc/bash.bashrc.d/openms.sh <<EOF
-export PATH=${openms_dir}/bin\${PATH:+:\$PATH}
-export LD_LIBRARY_PATH=${openms_dir}/lib\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}
-export OPENMS_DATA_PATH=${openms_dir}/share/OpenMS
-EOF
 }
 
 function install_R {
@@ -373,7 +359,8 @@ function install_R {
   apt-get clean -y
 
   local major_version=$(echo ${version} | cut -f1 -d.)
-  curl -L http://cran.cnr.berkeley.edu/src/base/R-${major_version}/R-${version}.tar.gz | tar zx
+  curl -L http://cran.rstudio.com/src/base/R-${major_version}/\
+R-${version}.tar.gz | tar zx
   cd R-${version}
   ./configure
 
@@ -457,21 +444,18 @@ setup_crcmod
 
 install_bcl2fastq   1.8.4
 install_bcl2fastq2  2.15.0.4
-install_bwa         0.7.10
-install_bowtie2     v2.2.3
-install_samtools    standalone # master branch does not build
-install_tophat2     2.0.12
+install_bwa         0.7.12
+install_bowtie2     v2.2.5
+install_samtools    standalone  # TODO: Switch to master branch.
+install_tophat2     2.0.14
 install_eigen       3.2.1
 install_cufflinks   2.2.1
 install_bamtools    v2.3.0
 install_pyvcf       0.6.7
-install_vcftools    945  # equivalent to release 0.1.12a
+install_vcftools    974  # Equivalent to release 0.1.13.
 install_freebayes   v9.9.13
-install_sra         2.3.5-2
-install_unfinnigan  ecf53d370bdd  # no real versioning
-install_openms      1.11.1
-install_R           3.1.0
+install_R           3.1.2
 install_Rpackages
 
-create_image        006  # INCREMENT ME
+create_image        007  # INCREMENT ME
 delete_instance
