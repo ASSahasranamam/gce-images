@@ -41,13 +41,14 @@ project=${1}
 cloud_storage_dir=${2}
 instance=${USER}-omics-create-image
 
-gcutil addinstance ${instance} \
-  --image=debian-7 \
-  --project=${project} \
-  --service_account_scopes=https://www.googleapis.com/auth/devstorage.full_control,https://www.googleapis.com/auth/compute \
-  --machine_type=n1-standard-16 \
-  --zone=us-central1-a \
-  --wait_until_running \
-  --auto_delete_boot_disk \
-  --metadata_from_file=startup-script:${startup_script} \
-  --metadata=cloud-storage-dir:${cloud_storage_dir}
+# The flag usage of gcloud is quirky. Do not use:
+# - equals sign, '--flag=value'
+# - double quotes, '--flag="value1 value2"'
+gcloud compute instances create ${instance} \
+  --project ${project} \
+  --zone us-central1-a \
+  --image ubuntu-14-04 \
+  --scopes compute-rw storage-full \
+  --machine-type n1-standard-16 \
+  --metadata cloud-storage-dir=${cloud_storage_dir} \
+  --metadata-from-file startup-script=${startup_script}
