@@ -55,6 +55,7 @@ function init_apt {
 # dependencies.
 function install_packages {
   apt-get install -y \
+    asciidoc \
     apache2 \
     autoconf \
     build-essential \
@@ -101,9 +102,11 @@ function install_packages {
     python-scipy \
     python-setuptools \
     qt4-dev-tools \
+    screen \
     subversion \
     swig \
     tabix \
+    tmux \
     unzip \
     x11-apps \
     xsltproc \
@@ -113,10 +116,14 @@ function install_packages {
   easy_install pip
 }
 
-# Setup bashrc to search for additional files in .d directory.
+# Setup bashrc:
+#  - search for additional files in .d directory.
+#  - include /usr/local paths for perl libraries
 function setup_bashrc {
   mkdir -p /etc/bash.bashrc.d
   cat >> /etc/bash.bashrc <<EOF
+
+export PERL5LIB="${PERL5LIB:+"$PERL5LIB:"}/usr/local/lib/perl5/site_perl"
 
 # Search for program specific bashrc files.
 if [ -d /etc/bash.bashrc.d ]; then
@@ -239,24 +246,40 @@ function install_bowtie2 {
   rm -r bowtie2
 }
 
-# SamTools is needed by Cufflinks.
+# Libraries from SamTools are needed by Cufflinks.
 # TopHat2 uses it's own packaging of SamTools.
+# Due to samtools and bcftools depending on htslib, we just check all of
+# these out at once and build them all together.
 function install_samtools {
-  local version=${1}
-  cd ${BUILD_DIR}
+  local htslib_version=${1}
+  local bcftools_version=${2}
+  local samtools_version=${3}
 
+  cd ${BUILD_DIR}
+  git clone https://github.com/samtools/bcftools.git
+  git clone https://github.com/samtools/htslib.git
   git clone https://github.com/samtools/samtools.git
-  cd samtools
-  git checkout ${version}
-  make -j${NUM_PROCESSORS}
-  # There is no 'install' target, so install everything by hand.
+
+  cd ${BUILD_DIR}/htslib
+  git checkout tags/${htslib_version}
+  make -j${NUM_PROCESSORS} install
+
+  cd ${BUILD_DIR}/bcftools
+  git checkout tags/${bcftools_version}
+  make -j${NUM_PROCESSORS} install
+
+
+  cd ${BUILD_DIR}/samtools
+  git checkout tags/${samtools_version}
+  make -j${NUM_PROCESSORS} install
+
+  # Headers and libraries need to be installed manually.
   mkdir -p /usr/local/include/bam
   cp *.h /usr/local/include/bam
   cp *.a /usr/local/lib
-  cp samtools bcftools/bcftools `find misc -executable -type f` /usr/local/bin
 
   cd ${BUILD_DIR}
-  rm -r samtools
+  rm -r htslib bcftools samtools
 }
 
 function install_tophat2 {
@@ -292,11 +315,13 @@ function install_cufflinks {
 cufflinks-${version}.tar.gz | tar zx
   cd cufflinks-${version}
   # TODO: Patch configuration to find the boost libraries automagically.
+  # TODO: Better handle that libhts needs to be explicitly given here.
   ./configure \
     --with-boost-system=/usr/lib/x86_64-linux-gnu/libboost_system.a \
     --with-boost-thread=/usr/lib/x86_64-linux-gnu/libboost_thread.a \
     --with-boost-serialization=/usr/lib/x86_64-linux-gnu/\
-libboost_serialization.a
+libboost_serialization.a \
+    LIBS=-lhts
   make -j${NUM_PROCESSORS} install
 
   cd ${BUILD_DIR}
@@ -349,6 +374,55 @@ function install_freebayes {
   make install
   cd ${BUILD_DIR}
   rm -r freebayes
+}
+
+function install_plink {
+  local version=${1}
+  cd ${BUILD_DIR}
+
+  git clone --recursive git://github.com/chrchang/plink-ng.git
+  cd plink-ng
+  git checkout tags/${version}
+
+  # Updates to find zlib in it's standard place on the system
+  sed -i 's/^ZLIB.*/ZLIB=-lz/' Makefile.std
+  sed -i 's/zlib-1.2.8\///' plink_common.h pigz.c
+
+  make -j${NUM_PROCESSORS} -f Makefile.std
+  cp plink /usr/local/bin
+
+  cd ${BUILD_DIR}
+  rm -r plink-ng
+}
+
+function install_pseq {
+  local version=${1}
+  cd ${BUILD_DIR}
+
+  git clone https://bitbucket.org/statgen/plinkseq.git
+  cd plinkseq
+  git checkout ${version}
+  make -j${NUM_PROCESSORS}
+  cp \
+    behead browser gcol mm mongoose pdas pseq smp tab2vcf \
+    /usr/local/bin
+
+  cd ${BUILD_DIR}
+  rm -r plinkseq
+}
+
+function install_gvcftools {
+  local version=${1}
+  cd ${BUILD_DIR}
+
+  git clone git://github.com/ctsa/gvcftools.git
+  cd gvcftools
+  git checkout tags/${version}
+  make -j${NUM_PROCESSORS} install
+  cp bin/* /usr/local/bin
+
+  cd ${BUILD_DIR}
+  rm -r gvcftools
 }
 
 function install_R {
@@ -446,16 +520,19 @@ install_bcl2fastq   1.8.4
 install_bcl2fastq2  2.15.0.4
 install_bwa         0.7.12
 install_bowtie2     v2.2.5
-install_samtools    standalone  # TODO: Switch to master branch.
+install_samtools    1.2.1 1.2 1.2  # Versions for htslib, bcftools, samtools.
 install_tophat2     2.0.14
-install_eigen       3.2.1
+install_eigen       3.2.4
 install_cufflinks   2.2.1
 install_bamtools    v2.3.0
 install_pyvcf       0.6.7
 install_vcftools    974  # Equivalent to release 0.1.13.
 install_freebayes   v9.9.13
-install_R           3.1.2
+install_plink       v1.90b3
+install_pseq        b4f9881  # Equivalent to release 0.10.
+install_gvcftools   v0.16.1  # Includes tabix 0.2.6 w/faidx and boost 1.44.
+install_R           3.2.0
 install_Rpackages
 
-create_image        007  # INCREMENT ME
+create_image        008  # INCREMENT ME
 delete_instance
