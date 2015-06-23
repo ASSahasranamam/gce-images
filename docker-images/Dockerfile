@@ -1,6 +1,4 @@
-### Start from Bioconductor view for Sequencing workflows.
-# The suggested name for this image is: googlegenomics/devel_sequencing
-
+### Start from Bioconductor view for Sequencing workflows ######
 FROM bioconductor/devel_sequencing:20150506
 MAINTAINER deflaux@google.com
 RUN apt-get update && \
@@ -8,22 +6,15 @@ RUN apt-get update && \
     screen \
     emacs
 
-
-### Google-specific R Setup #################################
+### Google-specific R Setup #####################################
 # Modelled after https://github.com/Bioconductor/bioc_docker/blob/master/out/devel_sequencing/Dockerfile
-
-
 ADD .Rprofile /home/rstudio/
-
 ADD installGooglePackages.R /tmp/
-
 RUN cd /tmp && \
     R -f /tmp/installGooglePackages.R
 
-
-### INSTALL  gcloud ########################################
+### Install gcloud ##############################################
 # Modelled after https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/Dockerfile
-
 RUN apt-get update && apt-get install -y -qq --no-install-recommends wget unzip python php5-mysql php5-cli php5-cgi openjdk-7-jre-headless openssh-client python-openssl && apt-get clean
 RUN wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.zip && unzip google-cloud-sdk.zip && rm google-cloud-sdk.zip
 ENV CLOUDSDK_PYTHON_SITEPACKAGES 1
