@@ -1,5 +1,5 @@
 ### Start from Bioconductor view for Sequencing workflows ######
-FROM bioconductor/devel_sequencing:20150506
+FROM bioconductor/devel_sequencing
 MAINTAINER deflaux@google.com
 RUN apt-get update && \
     apt-get install -y -t unstable\
