@@ -52,7 +52,7 @@ readonly VM_TYPE=${2:-n1-standard-2}
 readonly TAG=${3:-latest}
 
 readonly VM_IMAGE=container-vm-v20150129
-readonly DOCKER_IMAGE="b.gcr.io/bioctest/devel_sequencing:${TAG}"
+readonly DOCKER_IMAGE="b.gcr.io/bioctest/devel_sequencing"
 
 readonly CLOUD_PROJECT=$(
   gcloud config list project --format text | sed 's/core\.project: //')
@@ -105,7 +105,7 @@ if ! gcloud -q compute instances describe ${VM} &> /dev/null; then
 version: v1beta2
 containers:
   - name: ${VM}
-    image: ${DOCKER_IMAGE}
+    image: ${DOCKER_IMAGE}:${TAG}
     env:
       - name: CLOUD_PROJECT
         value: ${CLOUD_PROJECT}
