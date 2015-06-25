@@ -3,12 +3,8 @@ Google Compute Engine virtual machine images
 
 ## Overview
 
-Scripts that create a Google Compute Engine image containing a set of
-popular genomics software. The exact list of software available will
-change with time, but examples of software it may contain are tophat,
-bwa, and freebayes.  Additionally, R is pre-installed along with some
-bioconductor packages and bigrquery, the interface into Google's
-BigQuery.
+Scripts that create a Google Compute Engine image containing a set of popular genomics software. The exact list of software available will change with time, but examples of software it may contain are [TopHat](https://ccb.jhu.edu/software/tophat/index.shtml), [bwa](http://bio-bwa.sourceforge.net/), and [freebayes](https://github.com/ekg/freebayes).  Additionally, R is pre-installed along with some [Bioconductor](http://www.bioconductor.org/) packages and [bigrquery](http://cran.r-project.org/web/packages/bigrquery/index.html), the R interface to Google's BigQuery.  See [omics_startup_script.sh] for the current list of
+software and versions.
 
 ## Adding an image to your GCE project
 
