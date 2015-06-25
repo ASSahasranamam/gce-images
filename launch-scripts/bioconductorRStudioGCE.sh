@@ -19,7 +19,7 @@ function usage() {
   echo "${1}"
   echo
   echo "Usage: $0 [<vm name>] [<vm type>] [<version>]"
-  echo "  vm name: the name of the VM to create (default: bioc)"
+  echo "  vm name: the name of the VM to create (default: bioc-${USER})"
   echo "  vm type: the type of VM to create (default: n1-standard-2)"
   echo "  version: the docker container version to use (default: latest)"
   echo
@@ -28,13 +28,15 @@ function usage() {
   echo "    gcloud config set project <project name>"
   echo "  - default compute zone"
   echo "    gcloud config set compute/zone <zone name>"
-  echo "  - docker registry (while docker image is unavailable via docker.io)"
-  echo "    export DOCKER_REGISTRY=<docker host:port>"
   echo
 
   exit 1
 }
 readonly -f usage
+
+if [[ "$#" -eq 1 ]] && [[ "$1" == "--help" ]]; then
+  usage "Bioconductor on Google Cloud Platform"
+fi
 
 if gcloud -q config list compute/zone --format text | grep -q -i -F "none"; then
   usage "Default compute zone is not set.  To set it, run: gcloud config set compute/zone us-central1-f"
@@ -44,14 +46,13 @@ if gcloud -q config list project --format text | grep -q -i -F "none"; then
   usage "Default cloud project is not set.  To set it, run: gcloud config set project YOUR-PROJECT"
 fi
 
-DOCKER_IMAGE="b.gcr.io/bioctest/devel_sequencing:$TAG"
 # Initialize variables
 readonly VM=${1:-bioc-${USER}}
 readonly VM_TYPE=${2:-n1-standard-2}
-readonly TAG=${3:-0.02}
+readonly TAG=${3:-latest}
 
 readonly VM_IMAGE=container-vm-v20150129
-readonly DOCKER_IMAGE="bioconductor/devel_sequencing"
+readonly DOCKER_IMAGE="b.gcr.io/bioctest/devel_sequencing:${TAG}"
 
 readonly CLOUD_PROJECT=$(
   gcloud config list project --format text | sed 's/core\.project: //')
