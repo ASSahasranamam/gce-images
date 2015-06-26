@@ -7,7 +7,7 @@ Here we have a version of the Bioconductor [Sequencing View](http://www.biocondu
 
 Deploying a new version to the public image repository
 ------------------------------------------------------
-Get the latest Dockerfile, etc., from this repository via a git clone or pull and then:
+Get the latest Dockerfile, etc., from this repository via a `git clone` or `git pull` and then:
 
 (1) Build the image.
 ```
