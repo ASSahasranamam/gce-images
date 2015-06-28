@@ -16,6 +16,7 @@
 
 # Starts a Bioconductor container deployed to a GCE VM.
 function usage() {
+  echo
   echo "${1}"
   echo
   echo "Usage: $0 [<vm name>] [<vm type>] [<version>]"
@@ -61,7 +62,7 @@ readonly NETWORK_NAME=bioc
 readonly LOCALPORT=8787
 readonly URL="http://localhost:${LOCALPORT}"
 
-echo "Starting Bioconductor on VM '${VM}' (${VM_TYPE}) ..."
+echo "Starting setup process for Bioconductor on VM '${VM}' (${VM_TYPE}) ..."
 
 
 # Check if port is already in use
@@ -81,7 +82,7 @@ fi
 if ! gcloud -q compute networks describe ${NETWORK_NAME} &> /dev/null; then
   echo "Creating network '${NETWORK_NAME}' to associate with VM ..."
 
-  if ! gcloud -q compute networks create ${NETWORK_NAME} &> /dev/null; then
+  if ! gcloud -q compute networks create ${NETWORK_NAME} 1> /dev/null; then
     echo "Failed to create network '${NETWORK_NAME}'"
     exit 1
   fi
@@ -92,7 +93,7 @@ if ! gcloud -q compute firewall-rules describe allow-ssh-${NETWORK_NAME} &> /dev
   echo "Adding firewall rule to allow SSH access in network '${NETWORK_NAME}' ..."
 
   if ! gcloud -q compute firewall-rules create allow-ssh-${NETWORK_NAME} --allow tcp:22 \
-         --network $NETWORK_NAME &> /dev/null; then
+         --network $NETWORK_NAME 1> /dev/null; then
     echo "Failed to create firewall rule to allow SSH in network '${NETWORK_NAME}'"
     exit 1
   fi
