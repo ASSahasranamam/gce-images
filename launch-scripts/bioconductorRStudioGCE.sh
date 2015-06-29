@@ -44,7 +44,7 @@ if gcloud -q config list compute/zone --format text | grep -q -i -F "none"; then
 fi
 
 if gcloud -q config list project --format text | grep -q -i -F "none"; then
-  usage "Default cloud project is not set.  To set it, run: gcloud config set project YOUR-PROJECT"
+  usage "Default cloud project is not set.  To set it, run: gcloud config set project YOUR-PROJECT-ID"
 fi
 
 # Initialize variables
