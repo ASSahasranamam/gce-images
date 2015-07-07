@@ -12,32 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-###### Configure bigrquery via httr.
+# Turn off caching of credentials in this docker image.
+options("google_auth_cache_httr"=FALSE)
+options("httr_oauth_cache"=FALSE)
 
-# Use and out-of-band OAuth flow since the redirect will not work in this environment.
-options("httr_oauth_cache"="~/.httr-oauth")
-
-# Store oauth in one place.
+# Use and out-of-band OAuth flow since the redirect will not work in this dockerized environment.
 options(httr_oob_default = TRUE)
+
+# Remind users about the API_KEY option for accessing public data.
+setHook(packageEvent("GoogleGenomics", "attach"),
+        function(...) {
+          if(!GoogleGenomics:::authenticated()) {
+            message(paste("If you are only accessing public data, authenticate to GoogleGenomics via:",
+                          "authenticate(apiKey='YOUR_PUBLIC_API_KEY')"))
+          }
+        })
 
 # Place the Google Cloud Platform projectId in a variable so that we can pass it to bigrquery via our helper code.
 require(stringr)
 project <- str_trim(system("gcloud -q config list project --format yaml | grep project | cut -d : -f 2", intern=TRUE))
-
-###### Configure GoogleGenomics.
-
-# Assume a default location for client secrets.
-clientSecretsFilepath <- "~/client_secrets.json"
-
-# Authenticate out-of-band upon package load.
-gg <- function() {
-  if(file.exists(clientSecretsFilepath)) {
-    GoogleGenomics::authenticate(file=clientSecretsFilepath,
-                              invokeBrowser=FALSE)
-  } else {
-    message(paste("Authenticate to GoogleGenomics via:",
-           "authenticate(file='/YOUR/PATH/TO/client_secrets.json',",
-                 "invokeBrowser=FALSE)"))
-  }
-}
-setHook(packageEvent("GoogleGenomics", "attach"), function(...) { gg() })

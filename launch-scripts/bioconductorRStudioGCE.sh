@@ -115,13 +115,13 @@ containers:
         hostPort: 8787
         containerPort: 8787
     volumeMounts:
-      - name: log
-        mountPath: /var/log/bioc
+      - name: workspace
+        mountPath: /home/rstudio/workspace
 volumes:
-  - name: log
+  - name: workspace
     source:
       hostDir:
-        path: /bioc/log
+        path: /workspace
 
 EOF1
 
@@ -131,7 +131,7 @@ EOF1
         --image ${VM_IMAGE} \
         --image-project google-containers \
         --machine-type ${VM_TYPE} \
-        --boot-disk-size 50GB \
+        --boot-disk-size 200GB \
         --network ${NETWORK_NAME} \
         --scopes storage-full,bigquery,datastore,sql \
         --metadata-from-file google-container-manifest=vm.yaml \
@@ -156,6 +156,9 @@ until gcloud -q compute instances describe ${VM} 2>/dev/null | grep -q '^status:
 done
 printf "\n"
 
+# Trigger setup of ssh keys, if they do not currently exist.
+gcloud compute config-ssh
+chmod go-w ${HOME}/.ssh/config
 
 # Wait for Bioconductor to start and become accessible
 echo "Waiting for the Bioconductor container to start ..."
