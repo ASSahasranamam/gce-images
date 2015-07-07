@@ -12,7 +12,7 @@ RUN cd /tmp && \
 ### Install gcloud ##############################################
 # Modelled after https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/Dockerfile
 RUN apt-get update && \
-    apt-get install -y -qq --no-install-recommends
+    apt-get install -y -qq --no-install-recommends \
       openjdk-7-jre-headless \
       openssh-client \
       php5-cgi \
