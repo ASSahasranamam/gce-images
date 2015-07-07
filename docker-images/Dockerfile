@@ -19,7 +19,7 @@ RUN apt-get update && \
       php5-cli \
       php5-mysql \
       python \
-      python-openssl && \
+      python-openssl \
       unzip \
       wget && \
     apt-get clean
