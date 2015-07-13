@@ -53,7 +53,7 @@ readonly VM_TYPE=${2:-n1-standard-2}
 readonly TAG=${3:-latest}
 
 readonly VM_IMAGE=container-vm-v20150129
-readonly DOCKER_IMAGE="b.gcr.io/bioctest/devel_sequencing"
+readonly DOCKER_IMAGE="gcr.io/bioc_2015/devel_sequencing"
 
 readonly CLOUD_PROJECT=$(
   gcloud config list project --format text | sed 's/core\.project: //')

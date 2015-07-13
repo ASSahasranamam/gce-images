@@ -11,20 +11,20 @@ Get the latest Dockerfile, etc., from this repository via a `git clone` or `git 
 
 (1) Build the image.
 ```
-sudo docker build -t b.gcr.io/bioctest/devel_sequencing:0.03 .
+sudo docker build -t gcr.io/bioc_2015/devel_sequencing:0.01 .
 ```
 
 (2) Push the new version to the public image repository.  *Always specify a tag.*
 ```
-sudo gcloud  docker push b.gcr.io/bioctest/devel_sequencing:0.03
+sudo gcloud docker push gcr.io/bioc_2015/devel_sequencing:0.01
 ```
 
 (3) Also tag the new version as 'latest'.  *Always explicity mark as 'latest' a particular tagged version.*
 ```
-sudo docker tag  b.gcr.io/bioctest/devel_sequencing:0.03 b.gcr.io/bioctest/devel_sequencing:latest
+sudo docker tag  gcr.io/bioc_2015/devel_sequencing:0.01 gcr.io/bioc_2015/devel_sequencing:latest
 ```
 
 (4) And push 'latest'. (This will be really quick since its just updating metadata about 'latest'.)
 ```
-sudo gcloud docker push b.gcr.io/bioctest/devel_sequencing:latest 
+sudo gcloud docker push gcr.io/bioc_2015/devel_sequencing:latest 
 ```

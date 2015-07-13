@@ -16,14 +16,14 @@
 options("google_auth_cache_httr"=FALSE)
 options("httr_oauth_cache"=FALSE)
 
-# Use and out-of-band OAuth flow since the redirect will not work in this dockerized environment.
+# Use an out-of-band OAuth flow since the redirect will not work in this dockerized environment.
 options(httr_oob_default = TRUE)
 
 # Remind users about the API_KEY option for accessing public data.
 setHook(packageEvent("GoogleGenomics", "attach"),
         function(...) {
           if(!GoogleGenomics:::authenticated()) {
-            message(paste("If you are only accessing public data, authenticate to GoogleGenomics via:",
+            message(paste("If you are only accessing public data, you can authenticate to GoogleGenomics via:",
                           "authenticate(apiKey='YOUR_PUBLIC_API_KEY')"))
           }
         })
