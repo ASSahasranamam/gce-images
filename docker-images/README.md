@@ -9,6 +9,11 @@ Deploying a new version to the public image repository
 ------------------------------------------------------
 Get the latest Dockerfile, etc., from this repository via a `git clone` or `git pull` and then:
 
+(0) Make sure your build machine has the latest Bioconductor Docker image.
+```
+sudo docker pull bioconductor/devel_sequencing
+```
+
 (1) Build the image.
 ```
 sudo docker build -t gcr.io/bioc_2015/devel_sequencing:0.01 .
