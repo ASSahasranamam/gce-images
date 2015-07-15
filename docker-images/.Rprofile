@@ -23,8 +23,9 @@ options(httr_oob_default = TRUE)
 setHook(packageEvent("GoogleGenomics", "attach"),
         function(...) {
           if(!GoogleGenomics:::authenticated()) {
-            message(paste("If you are only accessing public data, you can authenticate to GoogleGenomics via:",
-                          "authenticate(apiKey='YOUR_PUBLIC_API_KEY')"))
+            message(paste("\nIf you are only accessing public data, you can",
+                          "authenticate to GoogleGenomics via:",
+                          "authenticate(apiKey='YOUR_PUBLIC_API_KEY')", sep="\n"))
           }
         })
 
