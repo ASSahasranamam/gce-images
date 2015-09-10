@@ -48,7 +48,7 @@ gcloud compute instances create ${instance} \
   --project ${project} \
   --zone us-central1-a \
   --image ubuntu-14-04 \
-  --scopes compute-rw storage-full \
+  --scopes compute-rw,storage-full \
   --machine-type n1-standard-16 \
   --metadata cloud-storage-dir=${cloud_storage_dir} \
   --metadata-from-file startup-script=${startup_script}
