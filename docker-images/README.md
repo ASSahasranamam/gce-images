@@ -7,29 +7,32 @@ Here we have a version of the Bioconductor [Sequencing View](http://www.biocondu
 
 Deploying a new version to the public image repository
 ------------------------------------------------------
-Get the latest Dockerfile, etc., from this repository via a `git clone` or `git pull` and then:
 
-(0) Make sure your build machine has the latest Bioconductor Docker image.
-```
-sudo docker pull bioconductor/devel_sequencing
-```
+The following instructions assume that Docker is installed and the current user can run docker commands.  For help with that one-time initial setup, see https://cloud.google.com/container-registry/#install_docker.
 
-(1) Build the image.
+(1) Get the latest Dockerfile, etc., from this repository via a `git clone` or `git pull`.
+
+(2) Make sure your build machine has the latest Bioconductor Docker image.
 ```
-sudo docker build -t gcr.io/bioc_2015/devel_sequencing:0.01 .
+docker pull bioconductor/devel_sequencing
 ```
 
-(2) Push the new version to the public image repository.  *Always specify a tag.*
+(3) Build the image.
 ```
-sudo gcloud docker push gcr.io/bioc_2015/devel_sequencing:0.01
-```
-
-(3) Also tag the new version as 'latest'.  *Always explicity mark as 'latest' a particular tagged version.*
-```
-sudo docker tag  gcr.io/bioc_2015/devel_sequencing:0.01 gcr.io/bioc_2015/devel_sequencing:latest
+docker build -t gcr.io/bioc_2015/devel_sequencing:0.01 .
 ```
 
-(4) And push 'latest'. (This will be really quick since its just updating metadata about 'latest'.)
+(4) Push the new version to the public image repository.  *Always specify a tag.*
 ```
-sudo gcloud docker push gcr.io/bioc_2015/devel_sequencing:latest 
+gcloud docker push gcr.io/bioc_2015/devel_sequencing:0.01
+```
+
+(5) Also tag the new version as 'latest'.  *Always explicity mark as 'latest' a particular tagged version.*
+```
+docker tag  gcr.io/bioc_2015/devel_sequencing:0.01 gcr.io/bioc_2015/devel_sequencing:latest
+```
+
+(6) And push 'latest'. (This will be really quick since its just updating metadata about 'latest'.)
+```
+gcloud docker push gcr.io/bioc_2015/devel_sequencing:latest 
 ```
