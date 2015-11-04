@@ -24,7 +24,7 @@ setHook(packageEvent("GoogleGenomics", "attach"),
         function(...) {
           if(!GoogleGenomics:::authenticated()) {
             message(paste("\nIf you are only accessing public data, you can",
-                          "authenticate to GoogleGenomics via:",
+                          "authenticate to GoogleGenomics via: ",
                           "authenticate(apiKey='YOUR_PUBLIC_API_KEY')", sep="\n"))
           }
         })
