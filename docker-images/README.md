@@ -24,7 +24,7 @@ docker build -t gcr.io/bioc_2015/devel_sequencing:0.01 .
 
 (4) Push the new version to the public image repository.  *Always specify a tag.*
 ```
-gcloud docker push gcr.io/bioc_2015/devel_sequencing:0.01
+gcloud docker -- push gcr.io/bioc_2015/devel_sequencing:0.01
 ```
 
 (5) Also tag the new version as 'latest'.  *Always explicity mark as 'latest' a particular tagged version.*
@@ -34,5 +34,5 @@ docker tag  gcr.io/bioc_2015/devel_sequencing:0.01 gcr.io/bioc_2015/devel_sequen
 
 (6) And push 'latest'. (This will be really quick since its just updating metadata about 'latest'.)
 ```
-gcloud docker push gcr.io/bioc_2015/devel_sequencing:latest 
+gcloud docker -- push gcr.io/bioc_2015/devel_sequencing:latest
 ```
